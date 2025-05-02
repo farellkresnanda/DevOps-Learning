@@ -1,0 +1,57 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - master  # Trigger on master branch pushes
+  pull_request:
+    branches:
+      - master  # Trigger on pull requests targeting master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.11.0'
+
+    - name: Install dependencies
+      run: |
+        npm install
+
+    - name: Build project
+      run: |
+        npm run build  # Optional: Adjust if you don't need to build the project
+
+  deploy:
+    if: github.ref == 'refs/heads/master'  # Only deploy on master
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code again (to get latest changes)
+      uses: actions/checkout@v4
+
+    - name: Deploy to server via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        script: |
+          cd ~/DevOps-Learning/node-deploy-test  # Adjust this path to your actual project directory
+          
+          # Ensure no uncommitted changes
+          git reset --hard HEAD
+          git pull origin master  # Pull the latest code from the master branch
+          
+          # Install dependencies again in case there are any new ones
+          npm install
+          
+          # Restart the app with PM2 or start it if it's not running
+          pm2 restart devops-test-app || pm2 start index.js --name devops-test-app

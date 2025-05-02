@@ -44,7 +44,7 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        # passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
           # Ensure we're in the correct directory
           cd /home/farel/DevOps-Learning/node-deploy-test  # Adjust to your server's path where package.json is located

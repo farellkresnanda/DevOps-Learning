@@ -1,7 +1,7 @@
 const http = require("http");
 
 const server = http.createServer((req, res) => {
-  res.end("Hello from Node.js CI/CD Test App!");
+  res.end("Hello from Node.js CI/CD Test App, Farell! - This code was updated at " + new Date().toISOString());
 });
 
 const PORT = 4000;

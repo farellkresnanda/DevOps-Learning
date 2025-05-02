@@ -28,32 +28,30 @@ jobs:
       run: |
         npm run build  # Optional: Adjust if you don't need to build the project
 
-        deploy:
-          if: github.ref == 'refs/heads/master'  # Only deploy on master
-          needs: build
-          runs-on: ubuntu-latest
-          steps:
-          - name: Checkout code again (to get latest changes)
-            uses: actions/checkout@v4
+  deploy:
+    if: github.ref == 'refs/heads/master'  # Only deploy on master
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code again (to get latest changes)
+      uses: actions/checkout@v4
 
-          - name: Deploy to server via SSH
-            uses: appleboy/ssh-action@master
-            with:
-              host: ${{ secrets.HOST }}
-              username: ${{ secrets.USERNAME }}
-              key: ${{ secrets.SSH_PRIVATE_KEY }}
-              passphrase: ${{ secrets.SSH_PASSPHRASE }}
-              script: |
-                cd home/farel/DevOps-Learning/node-deploy-test  # Navigate to the correct project folder
-                
-                # Ensure no uncommitted changes
-                git reset --hard HEAD
-                git pull origin master  # Pull the latest code from the master branch
-                
-                # Install dependencies
-                npm install
-                
-                # Restart the app with PM2 or start it if it's not running
-                pm2 restart devops-test-app || pm2 start index.js --name devops-test-app
-
-                # Optional: If you want to build the project before starting it
+    - name: Deploy to server via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        script: |
+          cd /home/farel/DevOps-Learning/node-deploy-test  # Adjust to your server's path
+          
+          # Ensure no uncommitted changes
+          git reset --hard HEAD
+          git pull origin master  # Pull the latest code from the master branch
+          
+          # Install dependencies
+          npm install
+          
+          # Restart the app with PM2 or start it if it's not running
+          pm2 restart devops-test-app || pm2 start index.js --name devops-test-app

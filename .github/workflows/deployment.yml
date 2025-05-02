@@ -22,10 +22,12 @@ jobs:
 
     - name: Install dependencies
       run: |
+        cd node-deploy-test
         npm install
 
     - name: Build project
       run: |
+        cd node-deploy-test
         npm run build  # Optional: Adjust if you don't need to build the project
 
   deploy:
@@ -44,7 +46,8 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
-          cd /home/farel/DevOps-Learning/node-deploy-test  # Adjust to your server's path
+          # Ensure we're in the correct directory
+          cd /home/farel/DevOps-Learning/node-deploy-test  # Adjust to your server's path where package.json is located
           
           # Ensure no uncommitted changes
           git reset --hard HEAD

@@ -1,0 +1,66 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches: 
+      - ''  # Trigger on all branches
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.11.0'
+    - name: Load variables
+      run: |
+        touch .env
+        echo NEXT_PUBLIC_API_BASE_URL=${{ vars.NEXT_PUBLIC_API_BASE_URL }} >> .env
+    - name: Install dependencies
+      run: npm install
+    - name: Build project
+      run: npm run build
+
+  deploy:
+    if: github.ref == 'refs/heads/master'  || github.ref == 'refs/heads/dev'  # Only run on master & dev branch
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Deploy app
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        script: |
+            export NVM_DIR="/home/kanzen/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm use 20
+
+            if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+              APP_DIR="/home/kanzen/BO-Apps-FE"
+              PM2_NAME="backoffice-fe:service"
+              BRANCH_NAME="master"
+            elif [ "${{ github.ref }}" = "refs/heads/dev" ]; then
+              APP_DIR="/home/kanzen/BO-Apps-FE-dev"
+              PM2_NAME="backoffice-fe-dev:service"
+              BRANCH_NAME="dev"
+            else
+              echo "Not a deployable branch"
+              exit 1
+            fi
+
+            cd $APP_DIR
+            git reset --hard HEAD
+            git pull origin $BRANCH_NAME --rebase
+            npm install
+            npm run build          
+            pm2 reload $PM2_NAME

@@ -44,7 +44,6 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        # passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
           # Ensure we're in the correct directory
           cd /home/farel/DevOps-Learning/node-deploy-test  # Adjust to your server's path where package.json is located
@@ -54,6 +53,7 @@ jobs:
           git pull origin master  # Pull the latest code from the master branch
           
           # Install dependencies
+          export PATH=$PATH:/home/farel/.nvm/versions/node/v20.19.1/bin  # Ensure the correct Node.js version is used
           npm install
           
           # Restart the app with PM2 or start it if it's not running

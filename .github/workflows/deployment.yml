@@ -44,7 +44,7 @@ jobs:
               key: ${{ secrets.SSH_PRIVATE_KEY }}
               passphrase: ${{ secrets.SSH_PASSPHRASE }}
               script: |
-                cd ~/DevOps-Learning/node-deploy-test  # Navigate to the correct project folder
+                cd home/farel/DevOps-Learning/node-deploy-test  # Navigate to the correct project folder
                 
                 # Ensure no uncommitted changes
                 git reset --hard HEAD
